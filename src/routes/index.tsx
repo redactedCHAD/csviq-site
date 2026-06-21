@@ -13,18 +13,20 @@ export const Route = createFileRoute("/")({
   component: Splash,
 });
 
-const FUNCTIONS = [
-  { name: "ASK", sig: "(question, content, [...context])", desc: "Free-form Q&A about a page" },
-  { name: "VERIFY", sig: "(content, sourceData)", desc: "Per-field match vs. ground truth" },
-  { name: "AUDIT_HTML", sig: "(content)", desc: "Grade, word count, headings, schema" },
-  { name: "CHECK_BRAND", sig: "(content)", desc: "Brand voice & compliance check" },
-  { name: "LOCAL_SCORE", sig: "(content)", desc: "0–100 local SEO signal" },
-  { name: "SEO_SCORE", sig: "(content)", desc: "Letter-grade SEO + sub-grades" },
-  { name: "FIND_MISSING", sig: "(content)", desc: "Checklist of missing elements" },
-  { name: "FACT_CHECK", sig: "(content, sourceData)", desc: "List factual inconsistencies" },
-  { name: "READABILITY", sig: "(content)", desc: "Reading grade level + tone" },
-  { name: "COMPARE", sig: "(content1, content2)", desc: "Plain-language version diff" },
-  { name: "PAGE_SCORE", sig: "(content)", desc: "Single composite 0–100 score" },
+type FnId = "ASK" | "VERIFY" | "AUDIT_HTML" | "CHECK_BRAND" | "LOCAL_SCORE" | "SEO_SCORE" | "FIND_MISSING" | "FACT_CHECK" | "READABILITY" | "COMPARE" | "PAGE_SCORE";
+
+const FUNCTIONS: { name: FnId; sig: string; desc: string; cell: string; formula: string }[] = [
+  { name: "ASK",         sig: "(question, content, [...context])", desc: "Free-form Q&A about a page",            cell: "F2", formula: `=ASK("Targets emergency intent?", C2)` },
+  { name: "VERIFY",      sig: "(content, sourceData)",             desc: "Per-field match vs. ground truth",      cell: "G2", formula: `=VERIFY(C2, Truth!A:B)` },
+  { name: "AUDIT_HTML",  sig: "(content)",                         desc: "Grade, word count, headings, schema",   cell: "H2", formula: `=AUDIT_HTML(C2)` },
+  { name: "CHECK_BRAND", sig: "(content)",                         desc: "Brand voice & compliance check",        cell: "I2", formula: `=CHECK_BRAND(C2)` },
+  { name: "LOCAL_SCORE", sig: "(content)",                         desc: "0–100 local SEO signal",                cell: "J2", formula: `=LOCAL_SCORE(C2)` },
+  { name: "SEO_SCORE",   sig: "(content)",                         desc: "Letter-grade SEO + sub-grades",         cell: "K2", formula: `=SEO_SCORE(C2)` },
+  { name: "FIND_MISSING",sig: "(content)",                         desc: "Checklist of missing elements",         cell: "L2", formula: `=FIND_MISSING(C2)` },
+  { name: "FACT_CHECK",  sig: "(content, sourceData)",             desc: "List factual inconsistencies",          cell: "M2", formula: `=FACT_CHECK(C2, Truth!A:B)` },
+  { name: "READABILITY", sig: "(content)",                         desc: "Reading grade level + tone",            cell: "N2", formula: `=READABILITY(C2)` },
+  { name: "COMPARE",     sig: "(content1, content2)",              desc: "Plain-language version diff",           cell: "O2", formula: `=COMPARE(C2, D2)` },
+  { name: "PAGE_SCORE",  sig: "(content)",                         desc: "Single composite 0–100 score",          cell: "P2", formula: `=PAGE_SCORE(C2)` },
 ];
 
 function Splash() {
