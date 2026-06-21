@@ -336,16 +336,20 @@ function FormulaCard({ label, code, out, isNumber }: { label: string; code: stri
 }
 
 function FunctionsGrid() {
+  const [active, setActive] = useState<FnId>("PAGE_SCORE");
+  const fn = FUNCTIONS.find((f) => f.name === active)!;
+
   return (
-    <section id="functions" className="border-t border-border bg-card/20">
-      <div className="max-w-7xl mx-auto px-6 py-32">
+    <section id="functions" className="border-t border-border bg-card/20 relative overflow-hidden">
+      <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
+      <div className="relative max-w-7xl mx-auto px-6 py-32">
         <div className="flex items-end justify-between mb-16 flex-wrap gap-6">
           <div>
             <p className="font-mono text-xs text-primary uppercase tracking-widest mb-6">/ the library</p>
             <h2 className="font-display text-5xl md:text-6xl leading-[1.05] text-balance">
               Eleven functions.
               <br />
-              <span className="italic">Zero</span> editorial bottleneck.
+              <span className="italic">Click</span> one to evaluate.
             </h2>
           </div>
           <p className="font-mono text-xs text-muted-foreground max-w-xs">
@@ -353,25 +357,269 @@ function FunctionsGrid() {
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border rounded-xl overflow-hidden border border-border">
-          {FUNCTIONS.map((fn, i) => (
-            <div
-              key={fn.name}
-              className="bg-card p-6 hover:bg-muted/40 transition-colors group"
-            >
-              <div className="flex items-baseline justify-between mb-4">
-                <span className="font-mono text-xs text-muted-foreground">/{String(i + 1).padStart(2, "0")}</span>
-                <span className="font-mono text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">ƒx</span>
-              </div>
-              <h3 className="font-mono font-semibold text-lg text-primary">{fn.name}</h3>
-              <p className="font-mono text-xs text-muted-foreground mt-1 break-all">{fn.sig}</p>
-              <p className="mt-4 text-sm text-foreground/80 leading-relaxed">{fn.desc}</p>
+        <div className="grid lg:grid-cols-[340px_1fr] gap-6">
+          {/* Function list (looks like a column from a sheet) */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden h-fit">
+            <div className="px-4 py-2.5 border-b border-border bg-muted/40 flex items-center justify-between">
+              <span className="font-mono text-xs text-muted-foreground">A · function</span>
+              <span className="font-mono text-xs text-muted-foreground">{FUNCTIONS.length} rows</span>
             </div>
-          ))}
+            <ul className="font-mono text-sm">
+              {FUNCTIONS.map((f, i) => {
+                const isActive = f.name === active;
+                return (
+                  <li key={f.name}>
+                    <button
+                      onClick={() => setActive(f.name)}
+                      className={`w-full grid grid-cols-[40px_1fr_auto] items-center text-left border-b border-border last:border-b-0 transition-colors ${
+                        isActive ? "bg-primary/10" : "hover:bg-muted/40"
+                      }`}
+                    >
+                      <span className={`px-3 py-3 border-r border-border text-xs ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+                        {i + 2}
+                      </span>
+                      <span className={`px-3 py-3 truncate ${isActive ? "text-primary font-semibold" : ""}`}>
+                        {f.name}
+                      </span>
+                      <span className={`px-3 text-xs ${isActive ? "text-primary" : "text-muted-foreground/60"}`}>
+                        {isActive ? "▸" : "ƒx"}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {/* Live evaluation panel — looks like a real sheet */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/40">
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-destructive/70" />
+                <span className="w-3 h-3 rounded-full bg-accent/80" />
+                <span className="w-3 h-3 rounded-full bg-primary/80" />
+              </div>
+              <span className="font-mono text-xs text-muted-foreground">{fn.name.toLowerCase()}-demo.xlsx</span>
+              <span className="font-mono text-xs text-primary">●  evaluated</span>
+            </div>
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-background/40">
+              <span className="font-mono text-xs text-muted-foreground w-8">{fn.cell}</span>
+              <span className="font-mono text-sm text-primary">ƒx</span>
+              <code key={fn.name} className="font-mono text-sm flex-1 truncate animate-fade-in">
+                {fn.formula}
+                <span className="cursor-blink" />
+              </code>
+            </div>
+            <div key={fn.name} className="p-6 md:p-8 animate-fade-in">
+              <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">{fn.desc}</p>
+              <FunctionOutput name={fn.name} />
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
+}
+
+function FunctionOutput({ name }: { name: FnId }) {
+  switch (name) {
+    case "ASK":
+      return (
+        <div className="border-l-2 border-primary pl-4">
+          <p className="text-foreground leading-relaxed">
+            Yes — the H1, intent line, and FAQ all reference 24/7 emergency service.
+            <span className="text-muted-foreground"> Missing: explicit response-time SLA and a phone CTA above the fold.</span>
+          </p>
+        </div>
+      );
+    case "VERIFY":
+      return (
+        <ul className="space-y-2 font-mono text-sm">
+          {[
+            ["phone", "MATCH", "ok"],
+            ["address", "MISMATCH", "fail", "expected 1200 Main · found 1220 Main"],
+            ["hours", "MATCH", "ok"],
+            ["service_area", "MATCH", "ok"],
+          ].map(([k, v, s, note]) => (
+            <li key={k} className="flex items-center gap-3 border-b border-border pb-2">
+              <span className="text-muted-foreground w-28">{k}</span>
+              <FlagPill flag={s as string} label={v as string} />
+              {note && <span className="text-xs text-muted-foreground">{note}</span>}
+            </li>
+          ))}
+        </ul>
+      );
+    case "AUDIT_HTML":
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            ["grade", "B+"],
+            ["words", "1,247"],
+            ["H1 / H2", "1 / 6"],
+            ["schema", "✓ LocalBiz"],
+            ["meta desc", "✓ 156c"],
+            ["FAQ", "4 items"],
+            ["images", "8 (3 no alt)"],
+            ["links", "12 int · 3 ext"],
+          ].map(([k, v]) => (
+            <div key={k} className="bg-background border border-border rounded-md p-3">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">{k}</div>
+              <div className="text-lg font-mono mt-1">{v}</div>
+            </div>
+          ))}
+        </div>
+      );
+    case "CHECK_BRAND":
+      return (
+        <div className="space-y-4">
+          {[
+            ["tone match", 88, "primary"],
+            ["forbidden terms", 100, "primary"],
+            ["claims compliance", 62, "accent"],
+          ].map(([k, v, c]) => (
+            <div key={k as string}>
+              <div className="flex justify-between font-mono text-xs mb-1">
+                <span className="text-muted-foreground">{k}</span>
+                <span className="text-foreground">{v}%</span>
+              </div>
+              <div className="h-1.5 bg-border rounded-full overflow-hidden">
+                <div className="h-full" style={{ width: `${v}%`, background: `var(--${c})` }} />
+              </div>
+            </div>
+          ))}
+          <p className="font-mono text-xs text-accent border-l-2 border-accent pl-3 mt-4">
+            ⚠ "guaranteed results" — violates legal claim policy
+          </p>
+        </div>
+      );
+    case "LOCAL_SCORE":
+      return (
+        <div className="flex items-center gap-8">
+          <div className="font-display text-7xl text-primary tabular-nums">82</div>
+          <div className="flex-1 space-y-2">
+            {[
+              ["NAP consistency", 95],
+              ["geo modifiers", 78],
+              ["service area", 88],
+              ["reviews mention", 64],
+            ].map(([k, v]) => (
+              <div key={k as string} className="flex items-center gap-3">
+                <span className="font-mono text-xs text-muted-foreground w-32">{k}</span>
+                <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+                  <div className="h-full bg-primary" style={{ width: `${v}%` }} />
+                </div>
+                <span className="font-mono text-xs tabular-nums w-8 text-right">{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    case "SEO_SCORE":
+      return (
+        <div className="flex items-center gap-8">
+          <div className="font-display text-7xl text-primary">A−</div>
+          <div className="grid grid-cols-2 gap-2 flex-1 font-mono text-sm">
+            {[["title", "A"], ["meta", "B+"], ["headings", "A"], ["internal links", "B"], ["images", "C"], ["schema", "A"]].map(([k, v]) => (
+              <div key={k} className="flex justify-between border-b border-border pb-1">
+                <span className="text-muted-foreground">{k}</span>
+                <span className="text-foreground">{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    case "FIND_MISSING":
+      return (
+        <ul className="space-y-2 font-mono text-sm">
+          {[
+            ["meta description", true],
+            ["H1 tag", true],
+            ["LocalBusiness schema", false],
+            ["FAQ section", false],
+            ["phone CTA above fold", false],
+            ["service-area page links", true],
+            ["customer reviews block", false],
+          ].map(([k, ok]) => (
+            <li key={k as string} className="flex items-center gap-3">
+              <span className={ok ? "text-primary" : "text-destructive"}>{ok ? "✓" : "✗"}</span>
+              <span className={ok ? "text-muted-foreground line-through" : "text-foreground"}>{k}</span>
+            </li>
+          ))}
+        </ul>
+      );
+    case "FACT_CHECK":
+      return (
+        <ul className="space-y-3">
+          {[
+            ["Hours stated as 24/7, source says Mon–Sat 7a–9p", "high"],
+            ["Years in business: page says 25, source says 18", "high"],
+            ["Service area lists Round Rock; not in source list", "med"],
+          ].map(([msg, sev]) => (
+            <li key={msg as string} className="flex items-start gap-3 border border-border rounded-md p-3 bg-background">
+              <span className={`font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded mt-0.5 ${sev === "high" ? "bg-destructive/15 text-destructive" : "bg-accent/15 text-accent"}`}>
+                {sev}
+              </span>
+              <span className="text-sm">{msg}</span>
+            </li>
+          ))}
+        </ul>
+      );
+    case "READABILITY":
+      return (
+        <div className="space-y-6">
+          <div>
+            <div className="flex justify-between font-mono text-xs text-muted-foreground mb-2">
+              <span>elementary</span><span>college</span>
+            </div>
+            <div className="relative h-2 bg-border rounded-full">
+              <div className="absolute inset-y-0 left-0 bg-primary rounded-full" style={{ width: "62%" }} />
+              <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-foreground border-2 border-background" style={{ left: "calc(62% - 6px)" }} />
+            </div>
+            <div className="mt-2 font-mono text-sm">Grade 8 · plain-English</div>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {["confident", "informative", "slightly salesy", "warm"].map((t) => (
+              <span key={t} className="font-mono text-xs px-2.5 py-1 rounded-full border border-border bg-background">{t}</span>
+            ))}
+          </div>
+        </div>
+      );
+    case "COMPARE":
+      return (
+        <div className="font-mono text-sm space-y-1">
+          {[
+            ["+", "Added a 24/7 emergency phone CTA in the hero", "primary"],
+            ["−", "Removed mention of 'free estimates' (legal: ok)", "destructive"],
+            ["~", "Tightened H1 from 14 → 9 words", "accent"],
+            ["+", "Added FAQ with 4 questions targeting near-me intent", "primary"],
+            ["~", "Schema upgraded LocalBusiness → Plumber", "accent"],
+          ].map(([sym, txt, c], i) => (
+            <div key={i} className="flex gap-3 border-b border-border py-1.5">
+              <span style={{ color: `var(--${c})` }} className="w-4">{sym}</span>
+              <span className="text-foreground/80">{txt}</span>
+            </div>
+          ))}
+        </div>
+      );
+    case "PAGE_SCORE":
+      return (
+        <div className="flex items-center gap-10">
+          <div className="relative w-36 h-36">
+            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+              <circle cx="50" cy="50" r="44" fill="none" stroke="var(--color-border)" strokeWidth="6" />
+              <circle cx="50" cy="50" r="44" fill="none" stroke="var(--color-primary)" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 44}`} strokeDashoffset={`${2 * Math.PI * 44 * (1 - 0.87)}`} />
+            </svg>
+            <div className="absolute inset-0 grid place-items-center font-display text-5xl text-primary tabular-nums">87</div>
+          </div>
+          <div className="flex-1 font-mono text-sm space-y-2">
+            <div className="flex justify-between border-b border-border pb-1"><span className="text-muted-foreground">seo</span><span>A−</span></div>
+            <div className="flex justify-between border-b border-border pb-1"><span className="text-muted-foreground">local</span><span>82</span></div>
+            <div className="flex justify-between border-b border-border pb-1"><span className="text-muted-foreground">brand</span><span>88</span></div>
+            <div className="flex justify-between border-b border-border pb-1"><span className="text-muted-foreground">facts</span><span className="text-destructive">3 issues</span></div>
+          </div>
+        </div>
+      );
+  }
 }
 
 function TwoWays() {
