@@ -42,6 +42,32 @@ function Splash() {
   );
 }
 
+function ThemeToggle() {
+  const [light, setLight] = useState(false);
+  useEffect(() => {
+    const stored = typeof window !== "undefined" ? localStorage.getItem("theme") : null;
+    const prefers = typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches;
+    const isLight = stored ? stored === "light" : !!prefers;
+    setLight(isLight);
+    document.documentElement.classList.toggle("light", isLight);
+  }, []);
+  const toggle = () => {
+    const next = !light;
+    setLight(next);
+    document.documentElement.classList.toggle("light", next);
+    localStorage.setItem("theme", next ? "light" : "dark");
+  };
+  return (
+    <button
+      onClick={toggle}
+      aria-label="Toggle theme"
+      className="font-mono text-xs px-3 py-2 rounded-md border border-border hover:border-primary hover:text-primary transition-colors"
+    >
+      {light ? "◐ dark" : "◑ light"}
+    </button>
+  );
+}
+
 function Nav() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/70 border-b border-border">
@@ -59,14 +85,17 @@ function Nav() {
           <a href="#install" className="hover:text-foreground transition-colors">Install</a>
           <a href="#security" className="hover:text-foreground transition-colors">Security</a>
         </nav>
-        <a
-          href="https://github.com/redactedCHAD/csvIQ"
-          target="_blank"
-          rel="noreferrer"
-          className="font-mono text-xs px-3 py-2 rounded-md border border-border hover:border-primary hover:text-primary transition-colors"
-        >
-          /github →
-        </a>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <a
+            href="https://x.com/zbailey83"
+            target="_blank"
+            rel="noreferrer"
+            className="font-mono text-xs px-3 py-2 rounded-md border border-border hover:border-primary hover:text-primary transition-colors"
+          >
+            @zbailey83 →
+          </a>
+        </div>
       </div>
     </header>
   );
@@ -483,14 +512,24 @@ function Footer() {
           <div className="font-mono text-xs text-muted-foreground">
             Open source · MIT · Powered by OpenRouter
           </div>
-          <a
-            href="https://github.com/redactedCHAD/csvIQ"
-            target="_blank"
-            rel="noreferrer"
-            className="font-mono text-xs hover:text-primary transition-colors"
-          >
-            github.com/redactedCHAD/csvIQ →
-          </a>
+          <div className="flex items-center gap-5 font-mono text-xs">
+            <a
+              href="https://x.com/zbailey83"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-primary transition-colors"
+            >
+              x.com/zbailey83 →
+            </a>
+            <a
+              href="https://github.com/redactedCHAD/csvIQ"
+              target="_blank"
+              rel="noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors"
+            >
+              github →
+            </a>
+          </div>
         </div>
       </div>
     </footer>

@@ -67,6 +67,35 @@
   --gradient-radial: radial-gradient(ellipse at top, oklch(0.88 0.22 130 / 0.15), transparent 60%);
 }
 
+.light {
+  --background: oklch(0.985 0.003 80);
+  --foreground: oklch(0.18 0.012 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.012 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.012 250);
+  --primary: oklch(0.55 0.20 145);          /* deeper lime for contrast on light */
+  --primary-foreground: oklch(0.985 0.003 80);
+  --secondary: oklch(0.94 0.005 80);
+  --secondary-foreground: oklch(0.18 0.012 250);
+  --muted: oklch(0.95 0.005 80);
+  --muted-foreground: oklch(0.45 0.012 250);
+  --accent: oklch(0.62 0.18 50);
+  --accent-foreground: oklch(0.985 0.003 80);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.985 0.003 80);
+  --border: oklch(0.88 0.005 80);
+  --input: oklch(0.88 0.005 80);
+  --ring: oklch(0.55 0.20 145);
+
+  --grid: oklch(0.92 0.005 80);
+  --cell: oklch(0.97 0.005 80);
+  --cell-active: oklch(0.55 0.20 145 / 0.10);
+
+  --shadow-glow: 0 0 80px -10px oklch(0.55 0.20 145 / 0.25);
+  --gradient-radial: radial-gradient(ellipse at top, oklch(0.55 0.20 145 / 0.10), transparent 60%);
+}
+
 @layer base {
   * { border-color: var(--color-border); }
   html { scroll-behavior: smooth; }
