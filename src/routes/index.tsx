@@ -59,14 +59,17 @@ function Nav() {
           <a href="#install" className="hover:text-foreground transition-colors">Install</a>
           <a href="#security" className="hover:text-foreground transition-colors">Security</a>
         </nav>
-        <a
-          href="https://github.com/redactedCHAD/csvIQ"
-          target="_blank"
-          rel="noreferrer"
-          className="font-mono text-xs px-3 py-2 rounded-md border border-border hover:border-primary hover:text-primary transition-colors"
-        >
-          /github →
-        </a>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <a
+            href="https://x.com/zbailey83"
+            target="_blank"
+            rel="noreferrer"
+            className="font-mono text-xs px-3 py-2 rounded-md border border-border hover:border-primary hover:text-primary transition-colors"
+          >
+            @zbailey83 →
+          </a>
+        </div>
       </div>
     </header>
   );
