@@ -786,3 +786,120 @@ function Footer() {
     </footer>
   );
 }
+
+function BulkSheet() {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTick((x) => x + 1), 1400);
+    return () => clearInterval(t);
+  }, []);
+
+  const cities = ["Austin", "Dallas", "Houston", "San Antonio", "Fort Worth", "El Paso", "Arlington", "Plano", "Frisco", "Lubbock", "Waco", "Tyler"];
+  const services = ["Plumbing", "HVAC", "Roofing", "Electrical", "Lawn Care", "Pest Control"];
+
+  const rows = cities.map((city, i) => {
+    const service = services[(i + tick) % services.length];
+    const base = (i * 13 + tick * 7) % 100;
+    const score = 35 + (base % 60);
+    const facts = (i + tick) % 4;
+    const brand = 60 + ((i * 9 + tick * 3) % 40);
+    const seo = ["A", "A−", "B+", "B", "C+", "C"][(i + tick) % 6];
+    return { city, service, score, facts, brand, seo };
+  });
+
+  return (
+    <section className="border-t border-border relative overflow-hidden">
+      <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
+      <div className="relative max-w-7xl mx-auto px-6 py-32">
+        <div className="grid md:grid-cols-12 gap-12 items-start mb-12">
+          <div className="md:col-span-6">
+            <p className="font-mono text-xs text-primary uppercase tracking-widest mb-6">/ at scale</p>
+            <h2 className="font-display text-5xl md:text-6xl leading-[1.05] text-balance">
+              Drag-fill the column.
+              <br />
+              <span className="italic text-muted-foreground">Audit</span> a thousand pages.
+            </h2>
+          </div>
+          <div className="md:col-span-6 md:pt-4">
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              One workbook. One row per service × city. Stack csvIQ formulas
+              across columns — then sort by score, filter for failures, and
+              ship fixes by Friday.
+            </p>
+            <div className="mt-6 flex gap-3 font-mono text-xs flex-wrap">
+              <span className="px-3 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20">{rows.length} pages</span>
+              <span className="px-3 py-1.5 rounded-full bg-card border border-border text-muted-foreground">5 columns</span>
+              <span className="px-3 py-1.5 rounded-full bg-card border border-border text-muted-foreground">~12s recalc</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xl">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/40">
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-full bg-destructive/70" />
+              <span className="w-3 h-3 rounded-full bg-accent/80" />
+              <span className="w-3 h-3 rounded-full bg-primary/80" />
+            </div>
+            <span className="font-mono text-xs text-muted-foreground">tx-local-seo.xlsx · Sheet1</span>
+            <span className="font-mono text-xs text-primary flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              recalculating
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <div className="grid grid-cols-[40px_1.2fr_1fr_180px_100px_160px_70px] font-mono text-sm min-w-[820px]">
+              {["", "A · city", "B · service", "C · =PAGE_SCORE", "D · =SEO_SCORE", "E · =CHECK_BRAND", "F · facts"].map((h, i) => (
+                <div key={i} className="px-3 py-2 border-b border-r border-border last:border-r-0 text-muted-foreground text-xs uppercase tracking-wider bg-muted/30">
+                  {h}
+                </div>
+              ))}
+              {rows.map((r, i) => (
+                <div key={r.city} className="contents">
+                  <div className="px-3 py-2.5 border-b border-r border-border text-muted-foreground text-xs">{i + 2}</div>
+                  <div className="px-3 py-2.5 border-b border-r border-border truncate">{r.city}</div>
+                  <div className="px-3 py-2.5 border-b border-r border-border text-muted-foreground truncate">{r.service}</div>
+                  <div className="px-3 py-2.5 border-b border-r border-border">
+                    <div className="flex items-center gap-2">
+                      <span className={`tabular-nums w-7 ${r.score > 80 ? "text-primary" : r.score > 60 ? "text-accent" : "text-destructive"}`}>{r.score}</span>
+                      <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+                        <div
+                          className="h-full transition-all duration-700"
+                          style={{ width: `${r.score}%`, background: r.score > 80 ? "var(--primary)" : r.score > 60 ? "var(--accent)" : "var(--destructive)" }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="px-3 py-2.5 border-b border-r border-border">
+                    <span className={r.seo.startsWith("A") ? "text-primary" : r.seo.startsWith("B") ? "text-foreground" : "text-accent"}>{r.seo}</span>
+                  </div>
+                  <div className="px-3 py-2.5 border-b border-r border-border">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+                        <div className="h-full bg-primary transition-all duration-700" style={{ width: `${r.brand}%` }} />
+                      </div>
+                      <span className="tabular-nums text-xs text-muted-foreground w-7 text-right">{r.brand}</span>
+                    </div>
+                  </div>
+                  <div className="px-3 py-2.5 border-b border-border">
+                    {r.facts === 0 ? (
+                      <span className="text-primary">✓</span>
+                    ) : (
+                      <span className="text-destructive font-semibold">{r.facts}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-muted/30 font-mono text-xs text-muted-foreground">
+            <span>Sheet1 · Sheet2 · Truth</span>
+            <span>Ready · {rows.filter((r) => r.score < 60).length} need review</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
