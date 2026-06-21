@@ -512,14 +512,24 @@ function Footer() {
           <div className="font-mono text-xs text-muted-foreground">
             Open source · MIT · Powered by OpenRouter
           </div>
-          <a
-            href="https://github.com/redactedCHAD/csvIQ"
-            target="_blank"
-            rel="noreferrer"
-            className="font-mono text-xs hover:text-primary transition-colors"
-          >
-            github.com/redactedCHAD/csvIQ →
-          </a>
+          <div className="flex items-center gap-5 font-mono text-xs">
+            <a
+              href="https://x.com/zbailey83"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-primary transition-colors"
+            >
+              x.com/zbailey83 →
+            </a>
+            <a
+              href="https://github.com/redactedCHAD/csvIQ"
+              target="_blank"
+              rel="noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors"
+            >
+              github →
+            </a>
+          </div>
         </div>
       </div>
     </footer>
