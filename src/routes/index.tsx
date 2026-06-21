@@ -37,6 +37,7 @@ function Splash() {
       <Marquee />
       <FormulaShowcase />
       <FunctionsGrid />
+      <BulkSheet />
       <TwoWays />
       <Security />
       <Footer />
