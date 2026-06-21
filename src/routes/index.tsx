@@ -244,14 +244,14 @@ function ScoreBar({ value, active }: { value: number; active: boolean }) {
   );
 }
 
-function FlagPill({ flag }: { flag: string }) {
+function FlagPill({ flag, label }: { flag: string; label?: string }) {
   const map: Record<string, { label: string; cls: string }> = {
     ok: { label: "PASS", cls: "bg-primary/15 text-primary" },
     warn: { label: "WARN", cls: "bg-accent/15 text-accent" },
     fail: { label: "FAIL", cls: "bg-destructive/15 text-destructive" },
   };
-  const f = map[flag];
-  return <span className={`px-2 py-1 rounded text-[10px] font-semibold ${f.cls}`}>{f.label}</span>;
+  const f = map[flag] ?? map.ok;
+  return <span className={`px-2 py-1 rounded text-[10px] font-semibold ${f.cls}`}>{label ?? f.label}</span>;
 }
 
 function Marquee() {
