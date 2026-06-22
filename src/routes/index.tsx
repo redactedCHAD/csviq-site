@@ -36,7 +36,9 @@ function Splash() {
       <Hero />
       <Marquee />
       <FormulaShowcase />
+      <LiveAudit />
       <FunctionsGrid />
+      <DriftMonitor />
       <BulkSheet />
       <TwoWays />
       <Security />
