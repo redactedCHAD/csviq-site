@@ -36,7 +36,9 @@ function Splash() {
       <Hero />
       <Marquee />
       <FormulaShowcase />
+      <LiveAudit />
       <FunctionsGrid />
+      <DriftMonitor />
       <BulkSheet />
       <TwoWays />
       <Security />
@@ -897,6 +899,574 @@ function BulkSheet() {
           <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-muted/30 font-mono text-xs text-muted-foreground">
             <span>Sheet1 · Sheet2 · Truth</span>
             <span>Ready · {rows.filter((r) => r.score < 60).length} need review</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ───────────────────────── LIVE AUDIT ─────────────────────────
+
+type Scenario = {
+  id: string;
+  tab: string;
+  filename: string;
+  before: { title: string; body: string[]; meta?: string };
+  after: { title: string; body: string[]; meta?: string };
+  before_scores: { page: number; read: number; brand: number; seo: string };
+  after_scores: { page: number; read: number; brand: number; seo: string };
+  missing: { label: string; fixed: boolean }[];
+  facts: { claim: string; truth: string; fixed_claim: string }[];
+};
+
+const SCENARIOS: Scenario[] = [
+  {
+    id: "local",
+    tab: "Local SEO page",
+    filename: "plumbing-austin.html",
+    before: {
+      title: "Plumbing Services",
+      meta: "We do plumbing.",
+      body: [
+        "We offer plumbing services in the area.",
+        "Call us anytime for help with your pipes.",
+        "We have been in business for many years.",
+      ],
+    },
+    after: {
+      title: "24/7 Emergency Plumber in Austin, TX | Same-Day Service",
+      meta: "Licensed Austin plumbers since 2008. Free estimates, upfront pricing, 1-hour response on emergencies. Serving all of Travis County.",
+      body: [
+        "Need a plumber in Austin right now? Our licensed team responds within 60 minutes, 24/7, across Travis County.",
+        "Upfront flat-rate pricing on drain cleaning, water heaters, leak detection, and repiping — no surprise fees.",
+        "Family-owned since 2008. 4.9★ across 1,200+ Google reviews. Fully bonded and insured (TX-MPL #41209).",
+      ],
+    },
+    before_scores: { page: 38, read: 52, brand: 41, seo: "D" },
+    after_scores: { page: 94, read: 88, brand: 96, seo: "A" },
+    missing: [
+      { label: "City + service in <title>", fixed: true },
+      { label: "Phone number / CTA", fixed: true },
+      { label: "License # (TX-MPL)", fixed: true },
+      { label: "Service area schema", fixed: true },
+      { label: "Hours of operation", fixed: true },
+    ],
+    facts: [
+      { claim: "in business for many years", truth: "Founded 2008", fixed_claim: "Family-owned since 2008" },
+    ],
+  },
+  {
+    id: "product",
+    tab: "Product description",
+    filename: "kettle-pro-v3.html",
+    before: {
+      title: "Electric Kettle",
+      body: [
+        "This is a really good electric kettle.",
+        "It boils water fast and is made of metal.",
+        "Holds about a liter and has a light.",
+      ],
+    },
+    after: {
+      title: "KettlePro V3 — 1.7L Stainless Steel Electric Kettle, 1500W",
+      body: [
+        "Boils 1L in 3 minutes with a 1500W concealed element and stay-cool double-wall 304 stainless body.",
+        "Six precise temperature presets (160°/175°/185°/195°/200°/212°F) for green, oolong, black, French press, and pour-over.",
+        "Cordless 360° base, auto shut-off, boil-dry protection. 2-year warranty. UL listed.",
+      ],
+    },
+    before_scores: { page: 44, read: 61, brand: 50, seo: "C" },
+    after_scores: { page: 91, read: 84, brand: 92, seo: "A−" },
+    missing: [
+      { label: "Capacity (1.7L)", fixed: true },
+      { label: "Wattage (1500W)", fixed: true },
+      { label: "Material spec (304 SS)", fixed: true },
+      { label: "Safety certification (UL)", fixed: true },
+      { label: "Warranty terms", fixed: true },
+    ],
+    facts: [
+      { claim: "about a liter", truth: "Spec: 1.7L", fixed_claim: "1.7L capacity" },
+      { claim: "made of metal", truth: "Spec: 304 stainless", fixed_claim: "304 stainless steel" },
+    ],
+  },
+  {
+    id: "faq",
+    tab: "FAQ entry",
+    filename: "shipping-faq.html",
+    before: {
+      title: "Shipping",
+      body: [
+        "We ship pretty fast.",
+        "Costs depend on where you live.",
+        "International might take a while.",
+      ],
+    },
+    after: {
+      title: "Shipping & Delivery FAQ — Rates, Times & Tracking",
+      body: [
+        "US orders ship same-day if placed before 2pm CT (Mon–Fri). Standard arrives in 3–5 business days; Express in 1–2.",
+        "Free standard shipping on orders over $50. Express is $12 flat. Rates by region in the calculator above.",
+        "International: 7–14 business days to 40+ countries via DHL. Duties calculated at checkout — no surprise fees.",
+      ],
+    },
+    before_scores: { page: 31, read: 70, brand: 48, seo: "D+" },
+    after_scores: { page: 89, read: 91, brand: 90, seo: "A−" },
+    missing: [
+      { label: "Concrete delivery windows", fixed: true },
+      { label: "Cutoff time for same-day", fixed: true },
+      { label: "Price thresholds", fixed: true },
+      { label: "Carrier name", fixed: true },
+      { label: "FAQ schema markup", fixed: true },
+    ],
+    facts: [
+      { claim: "ship pretty fast", truth: "SLA: same-day before 2pm CT", fixed_claim: "same-day if placed before 2pm CT" },
+      { claim: "International might take a while", truth: "SLA: 7–14 business days", fixed_claim: "7–14 business days to 40+ countries" },
+    ],
+  },
+];
+
+function LiveAudit() {
+  const [active, setActive] = useState(0);
+  const [fixed, setFixed] = useState(false);
+  const [evalStep, setEvalStep] = useState(0);
+  const s = SCENARIOS[active];
+
+  // re-run "evaluation" whenever scenario or fix state changes
+  useEffect(() => {
+    setEvalStep(0);
+    const t = setInterval(() => setEvalStep((x) => (x >= 4 ? 4 : x + 1)), 320);
+    return () => clearInterval(t);
+  }, [active, fixed]);
+
+  const view = fixed ? s.after : s.before;
+  const scores = fixed ? s.after_scores : s.before_scores;
+  const cells = [
+    { id: "D2", fn: "PAGE_SCORE", value: scores.page, kind: "score" as const },
+    { id: "E2", fn: "READABILITY", value: scores.read, kind: "score" as const },
+    { id: "F2", fn: "CHECK_BRAND", value: scores.brand, kind: "score" as const },
+    { id: "G2", fn: "SEO_SCORE", value: scores.seo, kind: "grade" as const },
+  ];
+
+  return (
+    <section id="demo" className="border-t border-border relative overflow-hidden">
+      <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
+      <div className="relative max-w-7xl mx-auto px-6 py-32">
+        <div className="grid md:grid-cols-12 gap-12 items-end mb-12">
+          <div className="md:col-span-7">
+            <p className="font-mono text-xs text-primary uppercase tracking-widest mb-6">/ live audit</p>
+            <h2 className="font-display text-5xl md:text-6xl leading-[1.05] text-balance">
+              Pick a page.
+              <br />
+              Watch <span className="italic text-muted-foreground">the cells think.</span>
+            </h2>
+          </div>
+          <div className="md:col-span-5">
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Same 4 formulas, three different content types. Hit{" "}
+              <span className="text-primary font-mono">Apply fixes</span> and the
+              draft rewrites itself — every score, fact-check, and missing-element
+              flag recalculates in place.
+            </p>
+          </div>
+        </div>
+
+        {/* scenario tabs */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {SCENARIOS.map((sc, i) => (
+            <button
+              key={sc.id}
+              onClick={() => {
+                setActive(i);
+                setFixed(false);
+              }}
+              className={`px-4 py-2 rounded-md font-mono text-xs uppercase tracking-wider border transition-colors ${
+                i === active
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card text-muted-foreground border-border hover:text-foreground"
+              }`}
+            >
+              {sc.tab}
+            </button>
+          ))}
+          <div className="flex-1" />
+          <button
+            onClick={() => setFixed((f) => !f)}
+            className={`px-5 py-2 rounded-md font-mono text-xs uppercase tracking-wider border transition-all ${
+              fixed
+                ? "bg-card text-muted-foreground border-border"
+                : "bg-primary text-primary-foreground border-primary glow"
+            }`}
+          >
+            {fixed ? "↺ Reset draft" : "▶ Apply fixes →"}
+          </button>
+        </div>
+
+        <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6">
+          {/* LEFT: editor / content */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xl">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/40">
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-destructive/70" />
+                <span className="w-3 h-3 rounded-full bg-accent/80" />
+                <span className="w-3 h-3 rounded-full bg-primary/80" />
+              </div>
+              <span className="font-mono text-xs text-muted-foreground">{s.filename}</span>
+              <span className={`font-mono text-xs ${fixed ? "text-primary" : "text-accent"}`}>
+                {fixed ? "✓ rewritten" : "○ draft"}
+              </span>
+            </div>
+            <div className="p-6 font-mono text-sm leading-relaxed">
+              <div className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">&lt;title&gt;</div>
+              <div
+                className={`mb-5 transition-all duration-500 ${
+                  fixed ? "text-primary" : "text-foreground"
+                }`}
+              >
+                {view.title}
+              </div>
+              {view.meta !== undefined && (
+                <>
+                  <div className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                    &lt;meta description&gt;
+                  </div>
+                  <div className="mb-5 text-muted-foreground italic">{view.meta}</div>
+                </>
+              )}
+              <div className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">&lt;body&gt;</div>
+              <div className="space-y-2">
+                {view.body.map((p, i) => {
+                  const fact = !fixed && s.facts.find((f) => p.includes(f.claim));
+                  return (
+                    <p key={i} className="text-foreground/90">
+                      {fact ? (
+                        <>
+                          {p.split(fact.claim)[0]}
+                          <span className="bg-destructive/20 text-destructive line-through decoration-destructive/60 px-1 rounded">
+                            {fact.claim}
+                          </span>
+                          {p.split(fact.claim)[1]}
+                        </>
+                      ) : (
+                        p
+                      )}
+                    </p>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: formula stack */}
+          <div className="space-y-4">
+            <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xl">
+              <div className="px-4 py-2.5 border-b border-border bg-muted/40 flex items-center justify-between">
+                <span className="font-mono text-xs text-muted-foreground">audit-output · 4 cells</span>
+                <span className="font-mono text-xs text-primary flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  evaluating
+                </span>
+              </div>
+              <div className="divide-y divide-border">
+                {cells.map((c, i) => {
+                  const ready = evalStep > i;
+                  return (
+                    <div key={c.id} className="px-4 py-4 flex items-center gap-4 font-mono text-sm">
+                      <span className="text-muted-foreground text-xs w-8">{c.id}</span>
+                      <code className="text-xs flex-1 truncate">
+                        <span className="text-muted-foreground">=</span>
+                        <span className="text-foreground">{c.fn}</span>
+                        <span className="text-muted-foreground">(</span>
+                        <span className="text-accent">C2</span>
+                        <span className="text-muted-foreground">)</span>
+                      </code>
+                      <div className="w-44 flex items-center justify-end gap-2">
+                        {!ready ? (
+                          <span className="text-muted-foreground text-xs italic">…</span>
+                        ) : c.kind === "score" ? (
+                          <>
+                            <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
+                              <div
+                                className="h-full transition-all duration-700"
+                                style={{
+                                  width: `${c.value as number}%`,
+                                  background:
+                                    (c.value as number) > 80
+                                      ? "var(--primary)"
+                                      : (c.value as number) > 60
+                                      ? "var(--accent)"
+                                      : "var(--destructive)",
+                                }}
+                              />
+                            </div>
+                            <span
+                              className={`tabular-nums w-8 text-right ${
+                                (c.value as number) > 80
+                                  ? "text-primary"
+                                  : (c.value as number) > 60
+                                  ? "text-accent"
+                                  : "text-destructive"
+                              }`}
+                            >
+                              {c.value}
+                            </span>
+                          </>
+                        ) : (
+                          <span
+                            className={`px-2.5 py-1 rounded text-xs font-semibold ${
+                              String(c.value).startsWith("A")
+                                ? "bg-primary/15 text-primary"
+                                : String(c.value).startsWith("B")
+                                ? "bg-accent/15 text-accent"
+                                : "bg-destructive/15 text-destructive"
+                            }`}
+                          >
+                            {c.value}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* FIND_MISSING checklist */}
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-border bg-muted/40 flex items-center justify-between">
+                <span className="font-mono text-xs text-muted-foreground">
+                  H2 · =FIND_MISSING(C2)
+                </span>
+                <span className="font-mono text-xs text-muted-foreground">
+                  {fixed ? `0 of ${s.missing.length}` : `${s.missing.length} of ${s.missing.length}`}
+                </span>
+              </div>
+              <div className="p-4 grid grid-cols-2 gap-2 font-mono text-xs">
+                {s.missing.map((m) => (
+                  <div
+                    key={m.label}
+                    className={`flex items-center gap-2 px-2 py-1.5 rounded transition-colors ${
+                      fixed ? "text-primary" : "text-destructive"
+                    }`}
+                  >
+                    <span className="w-4">{fixed ? "✓" : "✗"}</span>
+                    <span className={fixed ? "line-through opacity-70" : ""}>{m.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* FACT_CHECK */}
+            {s.facts.length > 0 && (
+              <div className="rounded-xl border border-border bg-card overflow-hidden">
+                <div className="px-4 py-2.5 border-b border-border bg-muted/40 flex items-center justify-between">
+                  <span className="font-mono text-xs text-muted-foreground">
+                    I2 · =FACT_CHECK(C2, Truth!A:B)
+                  </span>
+                  <span
+                    className={`font-mono text-xs ${
+                      fixed ? "text-primary" : "text-destructive"
+                    }`}
+                  >
+                    {fixed ? "0 issues" : `${s.facts.length} issue${s.facts.length > 1 ? "s" : ""}`}
+                  </span>
+                </div>
+                <div className="divide-y divide-border">
+                  {s.facts.map((f, i) => (
+                    <div key={i} className="px-4 py-3 font-mono text-xs space-y-1">
+                      <div className="flex items-start gap-2">
+                        <span className="text-muted-foreground uppercase tracking-wider w-12 shrink-0">claim</span>
+                        {fixed ? (
+                          <span className="text-primary">{f.fixed_claim}</span>
+                        ) : (
+                          <span className="text-destructive line-through decoration-destructive/60">
+                            "{f.claim}"
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-muted-foreground uppercase tracking-wider w-12 shrink-0">truth</span>
+                        <span className="text-foreground/80">{f.truth}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ───────────────────────── DRIFT MONITOR ─────────────────────────
+
+function DriftMonitor() {
+  const [t, setT] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setT((x) => x + 1), 1100);
+    return () => clearInterval(id);
+  }, []);
+
+  // 24 ticks of synthetic drift, three pages
+  const pages = [
+    { name: "/pricing", base: 96, vol: 4 },
+    { name: "/about", base: 88, vol: 7 },
+    { name: "/blog/refund-policy", base: 72, vol: 18 },
+  ];
+
+  const series = pages.map((p, pi) => {
+    const pts = Array.from({ length: 24 }, (_, i) => {
+      const x = (i + t * 0.4 + pi * 3) * 0.6;
+      const noise = Math.sin(x) * (p.vol * 0.5) + Math.cos(x * 1.7) * (p.vol * 0.4);
+      const drift = pi === 2 ? -Math.min(i, 18) * 1.4 : 0; // blog page degrades
+      return Math.max(20, Math.min(100, p.base + noise + drift));
+    });
+    return { ...p, pts, current: Math.round(pts[pts.length - 1]) };
+  });
+
+  const W = 600;
+  const H = 140;
+
+  const path = (pts: number[]) =>
+    pts
+      .map((v, i) => {
+        const x = (i / (pts.length - 1)) * W;
+        const y = H - (v / 100) * H;
+        return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(" ");
+
+  const color = (v: number) =>
+    v > 80 ? "var(--primary)" : v > 60 ? "var(--accent)" : "var(--destructive)";
+
+  return (
+    <section className="border-t border-border relative overflow-hidden">
+      <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
+      <div className="relative max-w-7xl mx-auto px-6 py-32">
+        <div className="grid md:grid-cols-12 gap-12 items-end mb-12">
+          <div className="md:col-span-7">
+            <p className="font-mono text-xs text-primary uppercase tracking-widest mb-6">/ drift monitor</p>
+            <h2 className="font-display text-5xl md:text-6xl leading-[1.05] text-balance">
+              When the source <span className="italic text-muted-foreground">moves,</span>
+              <br />
+              the cell knows.
+            </h2>
+          </div>
+          <div className="md:col-span-5">
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Schedule the workbook. Every recalc, csvIQ re-reads the page,
+              re-runs <span className="font-mono text-foreground">VERIFY</span> against your
+              source-of-truth sheet, and pages you when a score crosses your line.
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xl">
+          <div className="grid lg:grid-cols-[2fr_1fr]">
+            {/* chart */}
+            <div className="p-6 border-b lg:border-b-0 lg:border-r border-border">
+              <div className="flex items-center justify-between mb-4">
+                <span className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                  PAGE_SCORE · last 24 recalcs
+                </span>
+                <span className="font-mono text-xs text-primary flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  tick {t}
+                </span>
+              </div>
+              <svg viewBox={`0 0 ${W} ${H + 20}`} className="w-full h-48">
+                {/* grid lines */}
+                {[20, 40, 60, 80].map((y) => (
+                  <line
+                    key={y}
+                    x1={0}
+                    x2={W}
+                    y1={H - (y / 100) * H}
+                    y2={H - (y / 100) * H}
+                    stroke="var(--border)"
+                    strokeDasharray="2 4"
+                  />
+                ))}
+                {/* threshold */}
+                <line
+                  x1={0}
+                  x2={W}
+                  y1={H - 0.6 * H}
+                  y2={H - 0.6 * H}
+                  stroke="var(--destructive)"
+                  strokeDasharray="4 4"
+                  opacity={0.5}
+                />
+                <text x={4} y={H - 0.6 * H - 4} fontSize="9" fill="var(--destructive)" fontFamily="monospace">
+                  alert &lt; 60
+                </text>
+                {series.map((p) => (
+                  <g key={p.name}>
+                    <path d={path(p.pts)} fill="none" stroke={color(p.current)} strokeWidth={1.5} opacity={0.9} />
+                    <circle
+                      cx={W}
+                      cy={H - (p.pts[p.pts.length - 1] / 100) * H}
+                      r={3}
+                      fill={color(p.current)}
+                    />
+                  </g>
+                ))}
+              </svg>
+            </div>
+
+            {/* live readout */}
+            <div className="p-6 font-mono text-sm">
+              <div className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+                live readout
+              </div>
+              <div className="space-y-4">
+                {series.map((p) => {
+                  const prev = Math.round(p.pts[p.pts.length - 6] ?? p.current);
+                  const delta = p.current - prev;
+                  return (
+                    <div key={p.name} className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="truncate text-foreground">{p.name}</span>
+                        <span className="tabular-nums" style={{ color: color(p.current) }}>
+                          {p.current}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>
+                          Δ 5min{" "}
+                          <span className={delta < 0 ? "text-destructive" : "text-primary"}>
+                            {delta > 0 ? "+" : ""}
+                            {delta}
+                          </span>
+                        </span>
+                        {p.current < 60 ? (
+                          <span className="px-1.5 py-0.5 rounded bg-destructive/15 text-destructive text-[10px]">
+                            ALERT
+                          </span>
+                        ) : p.current < 80 ? (
+                          <span className="px-1.5 py-0.5 rounded bg-accent/15 text-accent text-[10px]">WATCH</span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px]">OK</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-border text-xs text-muted-foreground">
+                <div className="mb-2 uppercase tracking-wider">trigger</div>
+                <code className="block text-[11px] text-foreground/80 leading-relaxed">
+                  =IF(<span className="text-foreground">PAGE_SCORE</span>(A2)&lt;60,
+                  <br />
+                  &nbsp;&nbsp;<span className="text-primary">NOTIFY</span>("#content-alerts",A1),
+                  <br />
+                  &nbsp;&nbsp;"")
+                </code>
+              </div>
+            </div>
           </div>
         </div>
       </div>
