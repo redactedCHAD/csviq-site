@@ -73,14 +73,53 @@ function ThemeToggle() {
   );
 }
 
+function Logo({ size = 28 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      className="block"
+    >
+      <defs>
+        <linearGradient id="lg-cell" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="var(--primary)" />
+          <stop offset="100%" stopColor="var(--accent)" />
+        </linearGradient>
+      </defs>
+      {/* outer cell frame */}
+      <rect x="2.5" y="2.5" width="27" height="27" rx="6" stroke="url(#lg-cell)" strokeWidth="1.75" />
+      {/* inner grid lines */}
+      <line x1="12" y1="3" x2="12" y2="29" stroke="currentColor" strokeOpacity="0.18" strokeWidth="1" />
+      <line x1="3" y1="12" x2="29" y2="12" stroke="currentColor" strokeOpacity="0.18" strokeWidth="1" />
+      {/* active cell */}
+      <rect x="3" y="3" width="9" height="9" rx="2" fill="var(--primary)" fillOpacity="0.18" />
+      {/* fx mark */}
+      <path
+        d="M7 22.5c0-1.4.8-2.2 2.1-2.2h1.1M7.6 25h2.6"
+        stroke="var(--primary)"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      {/* AI sparkle */}
+      <path
+        d="M22 8.5l1.1 2.4 2.4 1.1-2.4 1.1L22 15.5l-1.1-2.4-2.4-1.1 2.4-1.1L22 8.5z"
+        fill="var(--primary)"
+      />
+      <circle cx="26.5" cy="6.5" r="1.2" fill="var(--accent)" />
+    </svg>
+  );
+}
+
 function Nav() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/70 border-b border-border">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <a href="#top" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 rounded-md bg-primary text-primary-foreground grid place-items-center font-mono font-bold text-xs">
-            ⌘
-          </div>
+        <a href="#top" className="flex items-center gap-2.5 group">
+          <Logo size={26} />
           <span className="font-mono text-sm tracking-tight">
             csv<span className="text-primary">IQ</span>
           </span>
@@ -114,40 +153,63 @@ function Hero() {
         className="absolute inset-0 pointer-events-none"
         style={{ background: "var(--gradient-radial)" }}
       />
-      <div className="relative max-w-7xl mx-auto px-6 pt-24 pb-32">
-        <div className="inline-flex items-center gap-2 font-mono text-xs px-3 py-1.5 rounded-full border border-border bg-card/50 mb-10">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <span className="text-muted-foreground">v1.0 · powered by OpenRouter</span>
-        </div>
+      <div className="relative max-w-7xl mx-auto px-6 pt-20 pb-28">
+        <div className="grid lg:grid-cols-12 gap-12 items-start">
+          {/* LEFT: copy */}
+          <div className="lg:col-span-7">
+            <div className="inline-flex items-center gap-2 font-mono text-xs px-3 py-1.5 rounded-full border border-border bg-card/50 mb-10">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="text-muted-foreground">v1.0 · powered by OpenRouter</span>
+            </div>
 
-        <h1 className="font-display text-[clamp(3rem,9vw,8.5rem)] leading-[0.95] text-balance">
-          AI content QA,
-          <br />
-          <span className="italic text-primary">inside</span> the cell.
-        </h1>
+            <h1 className="font-display text-[clamp(2.75rem,7.5vw,7.5rem)] leading-[0.95] text-balance">
+              AI content QA,
+              <br />
+              <span className="italic text-primary">inside</span> the cell.
+            </h1>
 
-        <p className="mt-8 max-w-2xl text-lg md:text-xl text-muted-foreground leading-relaxed text-balance">
-          Grade content, score SEO, catch brand-voice slips, and fact-check
-          against your source-of-truth — all from an Excel formula. Built
-          for teams shipping hundreds of pages.
-        </p>
+            <p className="mt-8 max-w-xl text-lg md:text-xl text-muted-foreground leading-relaxed text-balance">
+              Grade content, score SEO, catch brand-voice slips, and fact-check
+              against your source-of-truth — all from an Excel formula.
+            </p>
 
-        <div className="mt-12 flex flex-wrap items-center gap-4">
-          <a
-            href="https://github.com/redactedCHAD/csvIQ"
-            target="_blank"
-            rel="noreferrer"
-            className="group inline-flex items-center gap-3 bg-primary text-primary-foreground px-6 py-3.5 rounded-md font-medium hover:glow transition-all"
-          >
-            Get csvIQ
-            <span className="font-mono text-xs opacity-60 group-hover:translate-x-1 transition-transform">→</span>
-          </a>
-          <a
-            href="#functions"
-            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-md border border-border hover:border-foreground transition-colors font-mono text-sm"
-          >
-            See the functions
-          </a>
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <a
+                href="https://github.com/redactedCHAD/csvIQ"
+                target="_blank"
+                rel="noreferrer"
+                className="group inline-flex items-center gap-3 bg-primary text-primary-foreground px-6 py-3.5 rounded-md font-medium hover:glow transition-all"
+              >
+                Get csvIQ
+                <span className="font-mono text-xs opacity-60 group-hover:translate-x-1 transition-transform">→</span>
+              </a>
+              <a
+                href="#functions"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-md border border-border hover:border-foreground transition-colors font-mono text-sm"
+              >
+                See the functions
+              </a>
+            </div>
+
+            {/* stat strip */}
+            <div className="mt-14 grid grid-cols-3 gap-px bg-border rounded-lg overflow-hidden border border-border max-w-xl">
+              {[
+                { k: "11", v: "formulas" },
+                { k: "300+", v: "models via OpenRouter" },
+                { k: "1 cell", v: "to audit a page" },
+              ].map((s) => (
+                <div key={s.v} className="bg-card px-4 py-4">
+                  <div className="font-display text-3xl text-primary tabular-nums">{s.k}</div>
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground mt-1">{s.v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT: hero stage */}
+          <div className="lg:col-span-5 relative">
+            <HeroStage />
+          </div>
         </div>
 
         <div className="mt-24">
@@ -155,6 +217,110 @@ function Hero() {
         </div>
       </div>
     </section>
+  );
+}
+
+function HeroStage() {
+  const [score, setScore] = useState(48);
+  useEffect(() => {
+    const targets = [48, 67, 82, 91, 87];
+    let i = 0;
+    const t = setInterval(() => {
+      i = (i + 1) % targets.length;
+      setScore(targets[i]);
+    }, 1800);
+    return () => clearInterval(t);
+  }, []);
+
+  const circ = 2 * Math.PI * 70;
+  const offset = circ - (score / 100) * circ;
+
+  return (
+    <div className="relative aspect-square w-full max-w-[520px] mx-auto">
+      {/* glow ring */}
+      <div
+        className="absolute inset-6 rounded-full opacity-40 blur-3xl"
+        style={{ background: "var(--gradient-radial)" }}
+      />
+
+      {/* orbital SVG */}
+      <svg viewBox="0 0 200 200" className="absolute inset-0 w-full h-full">
+        <defs>
+          <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="var(--primary)" />
+            <stop offset="100%" stopColor="var(--accent)" />
+          </linearGradient>
+        </defs>
+        {/* dashed orbit */}
+        <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" strokeOpacity="0.15" strokeDasharray="2 6" />
+        <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" strokeOpacity="0.08" />
+        {/* track */}
+        <circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" strokeOpacity="0.12" strokeWidth="6" />
+        {/* progress */}
+        <circle
+          cx="100"
+          cy="100"
+          r="70"
+          fill="none"
+          stroke="url(#ring-grad)"
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          strokeDashoffset={offset}
+          transform="rotate(-90 100 100)"
+          style={{ transition: "stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)" }}
+        />
+        {/* tick marks */}
+        {Array.from({ length: 60 }).map((_, i) => {
+          const a = (i / 60) * Math.PI * 2;
+          const x1 = 100 + Math.cos(a) * 84;
+          const y1 = 100 + Math.sin(a) * 84;
+          const x2 = 100 + Math.cos(a) * (i % 5 === 0 ? 89 : 87);
+          const y2 = 100 + Math.sin(a) * (i % 5 === 0 ? 89 : 87);
+          return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeOpacity={i % 5 === 0 ? 0.35 : 0.15} strokeWidth="1" />;
+        })}
+      </svg>
+
+      {/* center score */}
+      <div className="absolute inset-0 grid place-items-center">
+        <div className="text-center">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">PAGE_SCORE</div>
+          <div
+            className="font-display text-7xl md:text-8xl text-primary tabular-nums leading-none mt-2"
+            style={{ transition: "all 0.6s ease" }}
+          >
+            {score}
+          </div>
+          <div className="font-mono text-xs text-muted-foreground mt-2">
+            {score >= 85 ? "▲ excellent" : score >= 65 ? "→ improving" : "▼ needs work"}
+          </div>
+        </div>
+      </div>
+
+      {/* floating chips */}
+      <div className="absolute -left-2 top-8 rounded-md border border-border bg-card/90 backdrop-blur px-3 py-2 shadow-xl rotate-[-4deg]">
+        <div className="font-mono text-[10px] text-muted-foreground">B2 · brand voice</div>
+        <div className="font-mono text-xs text-primary mt-0.5">✓ on-brand</div>
+      </div>
+
+      <div className="absolute -right-4 top-24 rounded-md border border-border bg-card/90 backdrop-blur px-3 py-2 shadow-xl rotate-[3deg]">
+        <div className="font-mono text-[10px] text-muted-foreground">M2 · =FACT_CHECK(…)</div>
+        <div className="font-mono text-xs text-accent mt-0.5">2 mismatches</div>
+      </div>
+
+      <div className="absolute left-6 bottom-10 rounded-md border border-border bg-card/90 backdrop-blur px-3 py-2 shadow-xl rotate-[-2deg]">
+        <div className="font-mono text-[10px] text-muted-foreground">N2 · readability</div>
+        <div className="font-mono text-xs text-foreground mt-0.5">grade 8.2</div>
+      </div>
+
+      <div className="absolute -right-2 bottom-16 rounded-md border border-primary/40 bg-primary/10 backdrop-blur px-3 py-2 shadow-xl rotate-[5deg]">
+        <div className="font-mono text-[10px] text-primary/80">recalculating…</div>
+        <div className="font-mono text-xs text-primary mt-0.5 flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+          live
+        </div>
+      </div>
+    </div>
   );
 }
 
