@@ -298,27 +298,99 @@ function HeroStage() {
       </div>
 
       {/* floating chips */}
-      <div className="absolute -left-2 top-8 rounded-md border border-border bg-card/90 backdrop-blur px-3 py-2 shadow-xl rotate-[-4deg]">
-        <div className="font-mono text-[10px] text-muted-foreground">B2 · brand voice</div>
-        <div className="font-mono text-xs text-primary mt-0.5">✓ on-brand</div>
-      </div>
+      <FormulaChip
+        className="-left-2 top-8 rotate-[-4deg]"
+        label="B2 · brand voice"
+        value={<span className="text-primary">✓ on-brand</span>}
+        tipPlacement="right"
+        name="CHECK_BRAND"
+        description="Scores copy against your brand voice guide — tone, banned phrases, required disclaimers."
+        example={`=CHECK_BRAND(A2, "guide.md")\n→ { score: 94, flags: [] }  ✓ on-brand`}
+      />
 
-      <div className="absolute -right-4 top-24 rounded-md border border-border bg-card/90 backdrop-blur px-3 py-2 shadow-xl rotate-[3deg]">
-        <div className="font-mono text-[10px] text-muted-foreground">M2 · =FACT_CHECK(…)</div>
-        <div className="font-mono text-xs text-accent mt-0.5">2 mismatches</div>
-      </div>
+      <FormulaChip
+        className="-right-4 top-24 rotate-[3deg]"
+        label="M2 · =FACT_CHECK(…)"
+        value={<span className="text-accent">2 mismatches</span>}
+        tipPlacement="left"
+        name="FACT_CHECK"
+        description="Verifies every claim in a cell against trusted sources and flags hallucinated stats."
+        example={`=FACT_CHECK(A2)\n→ "10k customers" ✗ (actual: 4.2k)\n→ "ISO 27001"    ✓`}
+      />
 
-      <div className="absolute left-6 bottom-10 rounded-md border border-border bg-card/90 backdrop-blur px-3 py-2 shadow-xl rotate-[-2deg]">
-        <div className="font-mono text-[10px] text-muted-foreground">N2 · readability</div>
-        <div className="font-mono text-xs text-foreground mt-0.5">grade 8.2</div>
-      </div>
+      <FormulaChip
+        className="left-6 bottom-10 rotate-[-2deg]"
+        label="N2 · readability"
+        value={<span className="text-foreground">grade 8.2</span>}
+        tipPlacement="right"
+        name="READABILITY"
+        description="Returns Flesch-Kincaid grade level so copy stays scannable for your audience."
+        example={`=READABILITY(A2)\n→ 8.2  (target: 6–9 for web)`}
+      />
 
-      <div className="absolute -right-2 bottom-16 rounded-md border border-primary/40 bg-primary/10 backdrop-blur px-3 py-2 shadow-xl rotate-[5deg]">
-        <div className="font-mono text-[10px] text-primary/80">recalculating…</div>
-        <div className="font-mono text-xs text-primary mt-0.5 flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          live
+      <FormulaChip
+        className="-right-2 bottom-16 rotate-[5deg]"
+        label="recalculating…"
+        value={
+          <span className="text-primary flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            live
+          </span>
+        }
+        tipPlacement="left"
+        accent
+        name="LIVE_RECALC"
+        description="Every formula re-runs when a source page, model, or upstream cell changes — no manual refresh."
+        example={`source changed → PAGE_SCORE(A2)\n  48 → 67 → 82  (1.4s)`}
+      />
+    </div>
+  );
+}
+
+function FormulaChip({
+  className,
+  label,
+  value,
+  name,
+  description,
+  example,
+  tipPlacement = "right",
+  accent = false,
+}: {
+  className?: string;
+  label: React.ReactNode;
+  value: React.ReactNode;
+  name: string;
+  description: string;
+  example: string;
+  tipPlacement?: "left" | "right";
+  accent?: boolean;
+}) {
+  return (
+    <div
+      tabIndex={0}
+      role="button"
+      aria-label={`${name}: ${description}`}
+      className={`group absolute z-10 rounded-md border ${
+        accent ? "border-primary/40 bg-primary/10" : "border-border bg-card/90"
+      } backdrop-blur px-3 py-2 shadow-xl outline-none cursor-help transition-transform duration-200 hover:scale-105 hover:rotate-0 focus-visible:scale-105 focus-visible:rotate-0 focus-visible:ring-2 focus-visible:ring-primary/60 ${className ?? ""}`}
+    >
+      <div className={`font-mono text-[10px] ${accent ? "text-primary/80" : "text-muted-foreground"}`}>{label}</div>
+      <div className="font-mono text-xs mt-0.5">{value}</div>
+
+      {/* Tooltip */}
+      <div
+        role="tooltip"
+        className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${
+          tipPlacement === "right" ? "left-full ml-3" : "right-full mr-3"
+        } w-64 rounded-lg border border-border bg-popover/95 backdrop-blur-md shadow-2xl p-3 opacity-0 translate-y-1 scale-95 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:scale-100 z-30`}
+      >
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-primary">fx</span>
+          <span className="font-mono text-xs text-foreground font-semibold">{name}</span>
         </div>
+        <p className="text-[11px] text-muted-foreground leading-snug mb-2">{description}</p>
+        <pre className="font-mono text-[10px] text-foreground bg-muted/60 border border-border rounded p-2 whitespace-pre-wrap leading-relaxed">{example}</pre>
       </div>
     </div>
   );
